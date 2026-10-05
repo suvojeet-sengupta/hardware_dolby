@@ -203,8 +203,8 @@ PRODUCT_PACKAGES += \
     vendor.dolby.media.dvs-service.xml \
     dvs-hal-service
 
-# Shim
+# Shim, from hardware/lineage/compat
 PRODUCT_PACKAGES += \
-    libcodec2_hidl_shim.vendor
+    libcodec2_hidl_shim
 endif
 
