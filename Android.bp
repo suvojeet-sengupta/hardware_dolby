@@ -1580,41 +1580,28 @@ cc_prebuilt_library_shared {
     soc_specific: true,
 }
 
-cc_prebuilt_binary {
+cc_binary {
     name: "dolbycodec2",
-    owner: "xiaomi",
-    target: {
-        android_arm64: {
-            srcs: [
-                "proprietary/vendor/bin/hw/dolbycodec2",
-            ],
-            shared_libs: [
-                "libbase",
-                "liblog",
-                "libcodec2",
-                "libcodec2_vndk",
-                "libutils",
-                "android.hardware.media.c2@1.0",
-                "libcodec2_hidl@1.0",
-                "libavservices_minijail_vendor",
-                "libbinder",
-                "libhidlbase",
-                "c2.dolby.store",
-                "libcutils",
-                "libc++",
-                "libc",
-                "libm",
-                "libdl",
-            ],
-        },
-    },
+    // Built from source instead of shipping Xiaomi's binary, which was built
+    // with CFI against older codec2 headers and fails the CFI check on our
+    // ComponentStore as soon as it starts.
+    srcs: ["dolbycodec2/service.cpp"],
+    vintf_fragments: ["dolbycodec2/dolbycodec2.xml"],
+    shared_libs: [
+        "android.hardware.media.c2@1.0",
+        "c2.dolby.store",
+        "libbase",
+        "libbinder",
+        "libcodec2",
+        "libcodec2_hidl@1.0",
+        "libcodec2_vndk",
+        "libhidlbase",
+        "liblog",
+        "libutils",
+    ],
     compile_multilib: "64",
-    strip: {
-        none: true,
-    },
-    prefer: true,
     relative_install_path: "hw",
-    soc_specific: true,
+    vendor: true,
 }
 
 cc_prebuilt_library_shared {
