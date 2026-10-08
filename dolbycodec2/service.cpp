@@ -4,7 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#define LOG_TAG "dolbycodec2"
+// Dolby's codec2 component stores: dolbycodec2 serves the Dolby Vision
+// store as "dolby", vendor.dolby.media.c2@1.0-service the audio store as
+// "default1". Each binary links the store library it serves.
+#ifndef STORE_INSTANCE
+#error "STORE_INSTANCE must be set"
+#endif
+
+#define LOG_TAG "dolbyc2"
 
 #include <android-base/logging.h>
 #include <binder/ProcessState.h>
@@ -14,7 +21,7 @@
 #include <signal.h>
 
 namespace android {
-// Exported by c2.dolby.store.
+// Exported by c2.dolby.store and libcodec2_store_dolby.
 std::shared_ptr<C2ComponentStore> GetCodec2DolbyComponentStore();
 }  // namespace android
 
@@ -27,7 +34,7 @@ using ::android::hardware::media::c2::V1_0::IComponentStore;
 using ::android::hardware::media::c2::V1_0::utils::ComponentStore;
 
 int main() {
-    LOG(INFO) << "Dolby Codec2 service starting";
+    LOG(INFO) << "Dolby Codec2 service starting for " << STORE_INSTANCE;
 
     signal(SIGPIPE, SIG_IGN);
 
@@ -40,7 +47,7 @@ int main() {
         LOG(ERROR) << "Creating Dolby Codec2's IComponentStore failed";
     } else {
         sp<IComponentStore> store = new ComponentStore(c2Store);
-        if (store->registerAsService("dolby") != OK) {
+        if (store->registerAsService(STORE_INSTANCE) != OK) {
             LOG(ERROR) << "Registering Dolby Codec2's IComponentStore failed";
         } else {
             LOG(INFO) << "Dolby Codec2's IComponentStore registered";

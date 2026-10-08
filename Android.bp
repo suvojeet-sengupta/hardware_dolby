@@ -991,44 +991,11 @@ cc_prebuilt_binary {
     soc_specific: true,
 }
 
-cc_prebuilt_binary {
+cc_binary {
     name: "vendor.dolby.media.c2@1.0-service",
-    owner: "motorola",
-    target: {
-        android_arm64: {
-            srcs: [
-                "proprietary/vendor/bin/hw/vendor.dolby.media.c2@1.0-service",
-            ],
-            shared_libs: [
-                "libbase",
-                "liblog",
-                "libcodec2",
-                "libutils",
-                "android.hardware.media.c2@1.0",
-                "android.hardware.media.c2@1.1",
-                "android.hardware.media.c2@1.2",
-                "libcodec2_hidl@1.0",
-                "libcodec2_hidl@1.1",
-                "libcodec2_hidl@1.2",
-                "libcodec2_vndk",
-                "libhidlbase",
-                "libavservices_minijail_vendor",
-                "libbinder",
-                "libcodec2_store_dolby",
-                "libc++",
-                "libc",
-                "libm",
-                "libdl",
-            ],
-        },
-    },
-    compile_multilib: "64",
-    strip: {
-        none: true,
-    },
-    prefer: true,
-    relative_install_path: "hw",
-    soc_specific: true,
+    defaults: ["dolby_c2_service_defaults"],
+    cflags: ["-DSTORE_INSTANCE=\"default1\""],
+    shared_libs: ["libcodec2_store_dolby"],
 }
 
 cc_prebuilt_library_shared {
@@ -1580,16 +1547,15 @@ cc_prebuilt_library_shared {
     soc_specific: true,
 }
 
-cc_binary {
-    name: "dolbycodec2",
-    // Built from source instead of shipping Xiaomi's binary, which was built
-    // with CFI against older codec2 headers and fails the CFI check on our
-    // ComponentStore as soon as it starts.
+cc_defaults {
+    name: "dolby_c2_service_defaults",
+    // Built from source instead of shipping Xiaomi's binaries. They allocate
+    // ComponentStore with the size it had when they were built, and its
+    // constructor writes past that now, so they crashed at random on boot.
+    // dolbycodec2 also failed a CFI check on it as soon as it started.
     srcs: ["dolbycodec2/service.cpp"],
-    vintf_fragments: ["dolbycodec2/dolbycodec2.xml"],
     shared_libs: [
         "android.hardware.media.c2@1.0",
-        "c2.dolby.store",
         "libbase",
         "libbinder",
         "libcodec2",
@@ -1602,6 +1568,14 @@ cc_binary {
     compile_multilib: "64",
     relative_install_path: "hw",
     vendor: true,
+}
+
+cc_binary {
+    name: "dolbycodec2",
+    defaults: ["dolby_c2_service_defaults"],
+    cflags: ["-DSTORE_INSTANCE=\"dolby\""],
+    shared_libs: ["c2.dolby.store"],
+    vintf_fragments: ["dolbycodec2/dolbycodec2.xml"],
 }
 
 cc_prebuilt_library_shared {
